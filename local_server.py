@@ -44,8 +44,7 @@ def start():
                 instance = _instance
                 break
 
-    print('Using instance {}.'.format(instance['instanceName']),
-        file=sys.stderr)
+    print('Using instance {}.'.format(instance['instanceName']), file=sys.stderr)
 
     data = {
         'city': graph_data['city'],
@@ -99,11 +98,11 @@ def scout():
             "https://guavabot.cs170.org/api/errors/#malformed-scout")
     if vertex == data['home']:
         return abort(403, 'Scout not allowed',
-            "https://guavabot.cs170.org/api/errors/#scout-not-allowed")        
+            "https://guavabot.cs170.org/api/errors/#scout-not-allowed")
     for student in students:
         if not isinstance(student, int):
             return abort(403, 'Malformed request',
-                "https://guavabot.cs170.org/api/errors/#malformed-request")            
+                "https://guavabot.cs170.org/api/errors/#malformed-request")
         if student <= 0 or student > data['k']:
             return abort(403, 'Malformed scout',
                 "https://guavabot.cs170.org/api/errors/#malformed-scout")
