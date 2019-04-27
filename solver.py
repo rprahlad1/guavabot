@@ -8,7 +8,7 @@ def solve(client):
 
     all_students = list(range(1, client.students + 1))
     non_home = list(range(1, client.home)) + list(range(client.home + 1, client.v + 1))
-<<<<<<< HEAD
+
     student_response = {} #vertex : bots or no bots
     for i in non_home:
         responses = client.scout(i, all_students)
@@ -27,9 +27,7 @@ def solve(client):
 
     #MST lol
     mst = list(nx.minimum_spanning_edges(client.G))
-=======
-    client.scout(random.choice(non_home), all_students) 
->>>>>>> f020732c53abbdbdb83b3ee8de01aeb1330e209a
+
 
     for _ in range(100):
         u, v = random.choice(list(client.G.edges()))
