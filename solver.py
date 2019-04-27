@@ -1,6 +1,6 @@
 # Put your solution here.
 import networkx as nx
-import random
+import random 
 
 def solve(client):
     client.end()
@@ -14,4 +14,4 @@ def solve(client):
         u, v = random.choice(list(client.G.edges()))
         client.remote(u, v)
 
-    client.end() 
+    client.end()
