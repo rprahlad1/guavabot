@@ -29,16 +29,17 @@ def solve(client):
     #MST
     mst = nx.minimum_spanning_tree(client.G)
 
+    #go thru bots that have majority yes and remote all the way home
     for b in bot_locations:
         path = nx.dijkstra_path(mst, b, client.home)
         for i in range(len(path)-1):
-            client.remote(path[i], path[i+1])
+            num = client.remote(path[i], path[i+1])
+            # stops remoting if there were no bots there
+            if num == 0:
+                break
 
-    #MST lol
-    # mst_edges = list(nx.minimum_spanning_edges(client.G))
-    #
-    # for _ in range(100):
-    #     u, v, w = random.choice(mst_edges)
-    #     client.remote(u, v)
+    #changes to make:
+    #try to remote from farthest vertex to reduce repetition
+    #somehow try to use student's responses better/ weed out liars
 
     client.end()
