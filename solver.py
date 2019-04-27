@@ -33,18 +33,23 @@ def solve(client):
     mst = nx.minimum_spanning_tree(client.G)
 
     num_bots = 0
-
+    paths = [] #tuples of (path,length)
     #go thru bots that have majority yes and remote all the way home
     for b in bot_locations:
         path = nx.dijkstra_path(mst, b, client.home)
-        for i in range(len(path)-1):
-            num = client.remote(path[i], path[i+1])
+        tup = (path, len(path))
+        paths.append(tup)
+
+    for path in sorted(paths, key=lambda x: x[1], reverse=True):
+        for i in range(len(path[0])-1):
+            num = client.remote(path[0][i], path[0][i+1])
             # stops remoting if there were no bots there
             if num == 0:
                 break
 
-            if path[i+1] == client.home:
+            if path[0][i+1] == client.home:
                 num_bots += num
+
 
     if num_bots < client.bots:
         for b in bot_maybe:
