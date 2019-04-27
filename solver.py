@@ -24,7 +24,7 @@ def solve(client):
         else:
             student_response[i] = False
 
-    #MST
+    #MST lol
     mst = list(nx.minimum_spanning_edges(client.G))
 
     for _ in range(100):
