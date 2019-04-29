@@ -50,30 +50,41 @@ def solve(client):
         if num != 0:
             p = (len(path)-1, path[1:])
             foundbots.append(p)
-            num_bots += 1
+            num_bots += num
+
+    print(num_bots)
+    print("MAJORITY YES DONE --------")
 
     if num_bots != client.bots:
         for m in bot_maybe:
-            path = nx.dijkstra_path(mst, b, client.home)
+            path = nx.dijkstra_path(mst, m, client.home)
             num = client.remote(path[0], path[1])
             if num != 0:
                 p = (len(path)-1, path[1:])
                 foundbots.append(p)
-                num_bots += 1
+                num_bots += num
             if num_bots == client.bots:
                 break
 
-    #get all bots home 
+    print("SCOUTING DONE --------")
+
+    #get all bots home naive solution
+    remoted_on = []
+    foundbots = sorted(foundbots, key=lambda x: x[0], reverse=True)
     bots_home = 0
     for bot in foundbots:
         lenbot = bot[0]
         botpath = bot[1]
         for i in range(lenbot-1):
-            client.remote(botpath[i], botpath[i+1])
-            if botpath[i+1] == client.home:
-                bots_home += 1
+            if botpath[i] not in remoted_on:
+                num = client.remote(botpath[i], botpath[i+1])
+                remoted_on.append(botpath[i])
+                if botpath[i+1] == client.home:
+                    bots_home += num
 
+    print(num_bots)
     print(bots_home)
+    print(foundbots)
 
 
 
