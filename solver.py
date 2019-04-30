@@ -4,19 +4,17 @@ import random
 import operator
 
 def update_weight(s_weight, s_loss):
-    epsilon = 0.3
+    epsilon = 0.5
     return s_weight*((1-epsilon)**(s_loss))
 
 
 def findbots(client, mst):
     all_students = list(range(1, client.students + 1))
     non_home = list(range(1, client.home)) + list(range(client.home + 1, client.v + 1))
-    # student_response = {} #vertex : bots or no bots
-    # bot_locations = []
-    # bot_maybe = []
-    losses = {}
-    student_weights = {}
-    paths = {}
+
+    losses = {} #keeps track of how many times a student has lied
+    student_weights = {} #maps student: their weight
+    paths = {} #vertex with a bot -> path to home
     student_response = {} #vertex: dict of student responses
     scores = {} #vertex: score from weights
     bots_found = 0
@@ -34,9 +32,10 @@ def findbots(client, mst):
         # bot_locations[i] = 0
 
     bots = []    #where students say bots are
-    while bots_found < client.bots:
-        max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
+    while bots_found < client.bots or scores:
 
+        max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
+        scores.pop(max_vertex)
 
         path = nx.dijkstra_path(mst, max_vertex, client.home)
 
@@ -66,7 +65,7 @@ def findbots(client, mst):
                 new_score += weight*1 if resp[stud] else 0
             scores[v] = new_score
 
-        scores.pop(max_vertex)
+
     #now paths has presumed bot locations : path to home
     return paths
 
