@@ -32,12 +32,11 @@ def findbots(client, mst):
         # bot_locations[i] = 0
 
     bots = []    #where students say bots are
-    while bots_found < client.bots or scores:
-
+    while bots_found < client.bots and scores:
         max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
-        scores.pop(max_vertex)
 
         path = nx.dijkstra_path(mst, max_vertex, client.home)
+        scores.pop(max_vertex)
 
         #incrementing bots_found HERE
         if path[0] not in remoted_to:
@@ -46,6 +45,8 @@ def findbots(client, mst):
                 paths[max_vertex] = path[1:]
             bots_found += num
             remoted_to.append(path[1])
+
+
 
         #update
         # if student lied (False)
