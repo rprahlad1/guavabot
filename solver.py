@@ -21,7 +21,7 @@ def findbots(client, mst):
     scores = {} #vertex: score from weights
     bots_found = 0
     #bot_locations = {} #keeps track of how many bots at each vertex
-    remoted_on = []
+    remoted_to = []
 
     for student in all_students:
         student_weights[student] = 1
@@ -39,12 +39,14 @@ def findbots(client, mst):
 
 
         path = nx.dijkstra_path(mst, max_vertex, client.home)
-        num = client.remote(path[0], path[1])
-        if num:
-            paths[max_vertex] = path[1:]
+
         #incrementing bots_found HERE
-        if path[0] not in remoted_on:
+        if path[0] not in remoted_to:
+            num = client.remote(path[0], path[1])
+            if num:
+                paths[max_vertex] = path[1:]
             bots_found += num
+            remoted_to.append(path[1])
 
         #update
         # if student lied (False)
