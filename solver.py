@@ -1,90 +1,97 @@
 # Put your solution here.
 import networkx as nx
 import random
+import operator
 
-def findbots(client):
+def update_weight(s_weight, s_loss):
+    epsilon = 0.3
+    return s_weight*((1-epsilon)**(s_loss))
+
+
+def findbots(client, mst):
     all_students = list(range(1, client.students + 1))
     non_home = list(range(1, client.home)) + list(range(client.home + 1, client.v + 1))
-    student_response = {} #vertex : bots or no bots
-    bot_locations = []
-    bot_maybe = []
+    # student_response = {} #vertex : bots or no bots
+    # bot_locations = []
+    # bot_maybe = []
+    losses = {}
+    student_weights = {}
+    paths = {}
+    student_response = {} #vertex: dict of student responses
+    scores = {} #vertex: score from weights
+    bots_found = 0
+    #bot_locations = {} #keeps track of how many bots at each vertex
+    remoted_on = []
+
+    for student in all_students:
+        student_weights[student] = 1
+        losses[student] = 0
+
     for i in non_home:
-        responses = client.scout(i, all_students)
-        count_T = 0
-        count_F = 0
-        for r in responses.values():
-            if r == True:
-                count_T += 1
-            else:
-                count_F += 1
+        #scout
+        student_response[i] = client.scout(i, all_students)
+        scores[i] = sum(student_response[i].values())
+        # bot_locations[i] = 0
 
-        if count_T > count_F:
-            student_response[i] = True
-            bot_locations.append(i)
-        else:
-            student_response[i] = False
-            bot_maybe.append(i)
+    bots = []    #where students say bots are
+    while bots_found < client.bots:
+        max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
 
-    return bot_locations, bot_maybe
+
+        path = nx.dijkstra_path(mst, max_vertex, client.home)
+        num = client.remote(path[0], path[1])
+        if num:
+            paths[max_vertex] = path[1:]
+        #incrementing bots_found HERE
+        if path[0] not in remoted_on:
+            bots_found += num
+
+        #update
+        # if student lied (False)
+        responses = student_response[max_vertex]
+        for stud in responses.keys():
+            if responses[stud] != num:
+            #updated weight of student based on lie
+                losses[stud] += 1
+                student_weights[stud] = update_weight(student_weights[stud], losses[stud])
+
+        #update score
+        for v in scores.keys():
+            resp = student_response[v]
+            new_score = 0
+            for stud in resp.keys():
+                weight = student_weights[stud]
+                new_score += weight*1 if resp[stud] else 0
+            scores[v] = new_score
+
+        scores.pop(max_vertex)
+    #now paths has presumed bot locations : path to home
+    return paths
+
 
 
 def solve(client):
     client.end()
     client.start()
 
-    bot_locations, bot_maybe = findbots(client)
-
-
     #MST
     mst = nx.minimum_spanning_tree(client.G)
 
-    num_bots = 0
-
-    #tuple: (len(path), path)
-    foundbots= []
-
-    #findbots from bot_locations and bots_maybe
-    for b in bot_locations:
-        path = nx.dijkstra_path(mst, b, client.home)
-        num = client.remote(path[0], path[1])
-        if num != 0:
-            p = (len(path)-1, path[1:])
-            foundbots.append(p)
-            num_bots += num
-
-    print(num_bots)
-    print("MAJORITY YES DONE --------")
-
-    if num_bots != client.bots:
-        for m in bot_maybe:
-            path = nx.dijkstra_path(mst, m, client.home)
-            num = client.remote(path[0], path[1])
-            if num != 0:
-                p = (len(path)-1, path[1:])
-                foundbots.append(p)
-                num_bots += num
-            if num_bots == client.bots:
-                break
-
-    print("SCOUTING DONE --------")
-
-    #get all bots home naive solution
-    remoted_on = []
-    foundbots = sorted(foundbots, key=lambda x: x[0], reverse=True)
+    paths = findbots(client, mst)
     bots_home = 0
-    for bot in foundbots:
-        lenbot = bot[0]
-        botpath = bot[1]
-        for i in range(lenbot-1):
-            if botpath[i] not in remoted_on:
-                num = client.remote(botpath[i], botpath[i+1])
-                remoted_on.append(botpath[i])
-                if botpath[i+1] == client.home:
-                    bots_home += num
 
-    print(num_bots)
+    print("REMOTING HOME")
+    #get all bots home naive solution
+    for bot in paths.keys():
+        botpath = paths[bot]
+        for i in range(len(botpath)-1):
+            num = client.remote(botpath[i], botpath[i+1])
+            if num == 0:
+                break
+            if botpath[i+1] == client.home:
+                bots_home += num
+
     print(bots_home)
-    print(foundbots)
 
 
 
