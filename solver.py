@@ -2,9 +2,10 @@
 import networkx as nx
 import random
 import operator
+import numpy as np
 
-def update_weight(s_weight, s_loss):
-    epsilon = 0.5
+def update_weight(client, s_weight, s_loss):
+    epsilon = np.sqrt(np.log(client.students)/client.v)
     return s_weight*((1-epsilon)**(s_loss))
 
 
@@ -32,9 +33,11 @@ def findbots(client, mst):
         # bot_locations[i] = 0
 
     bots = []    #where students say bots are
-    while bots_found < client.bots and scores:
-        max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
-
+    while bots_found < client.bots: #and scores:
+        if scores:
+            max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
+        else:
+            break
         path = nx.dijkstra_path(mst, max_vertex, client.home)
         scores.pop(max_vertex)
 
@@ -49,13 +52,21 @@ def findbots(client, mst):
 
 
         #update
-        # if student lied (False)
+
         responses = student_response[max_vertex]
         for stud in responses.keys():
-            if responses[stud] != num:
+            if responses[stud] != num: # if student lied (False) 
             #updated weight of student based on lie
                 losses[stud] += 1
-                student_weights[stud] = update_weight(student_weights[stud], losses[stud])
+                new_weight = update_weight(client, student_weights[stud], losses[stud])
+                student_weights[stud] = new_weight if new_weight > 0.5 else 0
+                if losses[stud] >= client.v:
+                    student_weights[stud] = 1
+        #normalize student student_weights
+        for s in student_weights.keys():
+            student_weights[s] = student_weights[s]/sum(student_weights.values())
+
+
 
         #update score
         for v in scores.keys():
@@ -79,7 +90,8 @@ def solve(client):
     #MST
     mst = nx.minimum_spanning_tree(client.G)
 
-    paths = findbots(client, mst)
+    #paths = findbots(client, mst)
+    paths = findbots(client, client.graph)
     bots_home = 0
 
     print("REMOTING HOME")
