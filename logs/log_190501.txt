@@ -1,0 +1,6 @@
+[16:04:53] Client initialized! Using group token 7pIJSkh50ML6wKGn4QArjNR1Qlx+jdFUsAQm+AT7RotnRjUxRFN1YQ==.
+[16:04:53] Rescues Remaining: 24/600
+[16:04:53] Saved submit_token at submit_tokens/submit_token_190501_160453.txt. Submit this on Gradescope.
+[16:05:28] Client initialized! Using group token 7pIJSkh50ML6wKGn4QArjNR1Qlx+jdFUsAQm+AT7RotnRjUxRFN1YQ==.
+[16:05:28] Rescues Remaining: 24/600
+[16:05:28] Saved submit_token at submit_tokens/submit_token_190501_160528.txt. Submit this on Gradescope.
