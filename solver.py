@@ -5,7 +5,8 @@ import operator
 import numpy as np
 
 def update_weight(client, s_weight, s_loss):
-    epsilon = np.sqrt(np.log(client.students)/client.v)
+    #epsilon = np.sqrt(np.log(client.v)/client.students)
+    epsilon = 0.5
     return s_weight*((1-epsilon)**(s_loss))
 
 
@@ -20,7 +21,7 @@ def findbots(client, mst):
     scores = {} #vertex: score from weights
     bots_found = 0
     #bot_locations = {} #keeps track of how many bots at each vertex
-    remoted_to = []
+    dont_remote = []
 
     for student in all_students:
         student_weights[student] = 1
@@ -31,11 +32,13 @@ def findbots(client, mst):
         student_response[i] = client.scout(i, all_students)
         scores[i] = sum(student_response[i].values())
         # bot_locations[i] = 0
-
+    bots_remoted_home = 0
     #bots = []    #where students say bots are
     while bots_found < client.bots: #and scores:
         if scores:
-            max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
+            sorted = max(scores.items(), key=operator.itemgetter(1))
+            max_vertex = sorted[0]
+            # print(sorted)
         else:
             break
         path = nx.dijkstra_path(mst, max_vertex, client.home)
@@ -43,12 +46,16 @@ def findbots(client, mst):
 
         #incrementing bots_found HERE
 
-        if path[0] not in remoted_to:
+        if path[0] not in dont_remote:
             num = client.remote(path[0], path[1])
+            if num and path[1] == client.home:
+                bots_remoted_home += num
             if num:
                 paths[max_vertex] = path[1:]
+                dont_remote.append(path[1])
             bots_found += num
-            remoted_to.append(path[1])
+            dont_remote.append(path[0])
+
         #update
         responses = student_response[max_vertex]
         for stud in responses.keys():
@@ -67,14 +74,17 @@ def findbots(client, mst):
         #update score
         for v in scores.keys():
             resp = student_response[v]
-            new_score = 0
+            #new_score = 0
             for stud in resp.keys():
                 if resp[stud] == num and num != 0: #if they didn't lie
                     weight = student_weights[stud]
-                    new_score += weight #*1 if resp[stud] else 0
-            scores[v] = new_score
-    #now paths has presumed bot locations : path to home #i hate this merge fml
-    return paths
+                    scores[v] += weight if resp[stud] else 0
+            #scores[v] = new_score
+    #now paths has presumed bot locations : path to home
+        #print(scores)
+        #break
+
+    return paths, bots_remoted_home
 
 
 
@@ -86,8 +96,8 @@ def solve(client):
     mst = nx.minimum_spanning_tree(client.G)
 
     #paths = findbots(client, mst)
-    paths = findbots(client, client.graph)
-    bots_home = 0
+    paths, bots_home = findbots(client, client.graph)
+    #bots_home = 0
 
     print("REMOTING HOME")
     #get all bots home naive solution
