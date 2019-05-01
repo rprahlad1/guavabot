@@ -6,7 +6,7 @@ import numpy as np
 
 def update_weight(client, s_weight, s_loss):
     #epsilon = np.sqrt(np.log(client.v)/client.students)
-    epsilon = 0.5
+    epsilon = 0.2
     return s_weight*((1-epsilon)**(s_loss))
 
 
@@ -99,21 +99,43 @@ def solve(client):
     paths, bots_home = findbots(client, client.graph)
     #bots_home = 0
 
+
     print("REMOTING HOME")
     #get all bots home naive solution
-    for bot in paths.keys():
-        botpath = paths[bot]
-        for i in range(len(botpath)-1):
-            num = client.remote(botpath[i], botpath[i+1])
-            if num == 0:
-                break
-            if botpath[i+1] == client.home:
-                bots_home += num
+    # for bot in paths.keys():
+    #     botpath = paths[bot]
+    #     for i in range(len(botpath)-1):
+    #         num = client.remote(botpath[i], botpath[i+1])
+    #         if num == 0:
+    #             break
+    #         if botpath[i+1] == client.home:
+    #             bots_home += num
 
-    print(bots_home) 
+    #trying to optimize merging paths
+    remoted_on = []
+    path_lengths = {}
+    for p in paths.keys():
+        path_lengths[p] = len(paths[p])
+
+    while bots_home < client.bots:
+        max_length = max(path_lengths.items(), key=operator.itemgetter(1))[1]
+        if max_length == 1:
+            break
+        for bot in paths.keys():
+            if path_lengths[bot] == max_length:
+                botpath = paths[bot]
+                if botpath[0] not in remoted_on:
+                    num = client.remote(botpath[0], botpath[1])
+                    remoted_on.append(botpath[0])
+                    paths[bot] = paths[bot][1:]
+                    path_lengths[bot] -= 1
+                    if num == 0:
+                        break
+                    if botpath[1] == client.home:
+                        bots_home += num
 
 
-
+    print(bots_home)
 
 
 
