@@ -127,6 +127,7 @@ def solve(client):
                 if botpath[0] not in remoted_on:
                     num = client.remote(botpath[0], botpath[1])
                     remoted_on.append(botpath[0])
+                    #decrement the paths
                     paths[bot] = paths[bot][1:]
                     path_lengths[bot] -= 1
                     if num == 0:
