@@ -69,7 +69,7 @@ def findbots(client, mst):
             resp = student_response[v]
             new_score = 0
             for stud in resp.keys():
-                if resp[stud] == num: #if they didn't lie
+                if resp[stud] == num and num != 0: #if they didn't lie
                     weight = student_weights[stud]
                     new_score += weight #*1 if resp[stud] else 0
             scores[v] = new_score
