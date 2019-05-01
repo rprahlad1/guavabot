@@ -32,7 +32,7 @@ def findbots(client, mst):
         scores[i] = sum(student_response[i].values())
         # bot_locations[i] = 0
 
-    bots = []    #where students say bots are
+    #bots = []    #where students say bots are
     while bots_found < client.bots: #and scores:
         if scores:
             max_vertex = max(scores.items(), key=operator.itemgetter(1))[0]
@@ -42,42 +42,37 @@ def findbots(client, mst):
         scores.pop(max_vertex)
 
         #incrementing bots_found HERE
+
         if path[0] not in remoted_to:
             num = client.remote(path[0], path[1])
             if num:
                 paths[max_vertex] = path[1:]
             bots_found += num
             remoted_to.append(path[1])
-
-
-
         #update
-
         responses = student_response[max_vertex]
         for stud in responses.keys():
-            if responses[stud] != num: # if student lied (False) 
+            if responses[stud] != num: # if student lied (False)
             #updated weight of student based on lie
                 losses[stud] += 1
                 new_weight = update_weight(client, student_weights[stud], losses[stud])
                 student_weights[stud] = new_weight if new_weight > 0.5 else 0
-                if losses[stud] >= client.v:
+                if losses[stud] >= client.v/2:
                     student_weights[stud] = 1
         #normalize student student_weights
         for s in student_weights.keys():
-            student_weights[s] = student_weights[s]/sum(student_weights.values())
-
-
+            total = sum(student_weights.values())
+            student_weights[s] = student_weights[s]/total if total != 0 else 0
 
         #update score
         for v in scores.keys():
             resp = student_response[v]
             new_score = 0
             for stud in resp.keys():
-                weight = student_weights[stud]
-                new_score += weight*1 if resp[stud] else 0
+                if resp[stud] == num: #if they didn't lie
+                    weight = student_weights[stud]
+                    new_score += weight #*1 if resp[stud] else 0
             scores[v] = new_score
-
-
     #now paths has presumed bot locations : path to home
     return paths
 
