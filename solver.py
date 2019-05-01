@@ -110,7 +110,7 @@ def solve(client):
             if botpath[i+1] == client.home:
                 bots_home += num
 
-    print(bots_home)
+    print(bots_home) 
 
 
 
