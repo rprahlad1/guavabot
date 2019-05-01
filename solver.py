@@ -74,7 +74,7 @@ def findbots(client, mst):
                     weight = student_weights[stud]
                     new_score += weight #*1 if resp[stud] else 0
             scores[v] = new_score
-    #now paths has presumed bot locations : path to home
+    #now paths has presumed bot locations : path to home 
     return paths
 
 
