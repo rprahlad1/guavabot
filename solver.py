@@ -29,6 +29,7 @@ def findbots(client, mst):
         #scout
         student_response[i] = client.scout(i, all_students)
         scores[i] = sum(student_response[i].values())
+        print(scores)
         # bot_locations[i] = 0
 
     bots = []    #where students say bots are
